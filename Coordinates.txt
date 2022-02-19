@@ -1,0 +1,35 @@
+time  = table['time2']
+volt = table['volt2']
+ln_volt = []
+for k in volt:
+        ln_volt.append(np.log(k))
+k2, b2, s_k2, s_b2 = mnk(time, ln_volt)
+x = np.arange(0, 200, 0.01)
+plt.plot(x, k2 * x + b2, c='blue')
+
+time  = table['time3']
+volt = table['volt3']
+ln_volt = []
+for k in volt:
+        ln_volt.append(np.log(k))
+k3, b3, s_k3, s_b3 = mnk(time, ln_volt)
+x = np.arange(0, 190, 0.01)
+plt.plot(x, k3 * x + b3, c='green')
+
+time  = table['time4']
+volt = table['volt4']
+ln_volt = []
+for k in volt:
+        ln_volt.append(np.log(k))
+k4, b4, s_k4, s_b4 = mnk(time, ln_volt)
+x = np.arange(0, 640, 0.01)
+plt.plot(x, k4 * x + b4, c='brown')
+
+time  = table['time5']
+volt = table['volt5']
+ln_volt = []
+for k in volt:
+        ln_volt.append(np.log(k))
+k5, b5, s_k5, s_b5 = mnk(time, ln_volt)
+x = np.arange(0, 520, 0.01)
+plt.plot(x, k5 * x + b5, c='grey')
