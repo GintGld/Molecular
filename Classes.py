@@ -19,6 +19,29 @@ class particle:
         self.prev_x = x_0 - self.vx * dt
         self.prev_y = y_0 - self.vy * dt
         self.prev_z = z_0 - self.vz * dt
+import numpy as np
+from Constants import *
+
+def Distance(object, x, y, z):
+    return np.sqrt((object.x - x) ** 2 + (object.y - y) ** 2 + (object.z - z) ** 2)
+
+class particle:
+    def __init__(self, x_0, y_0, z_0, v_x, v_y, v_z):
+        '''
+            Создание объекта частица с заданными координатами и скоростями
+        '''
+        self.x = x_0
+        self.y = y_0
+        self.z = z_0
+        self.vx = v_x
+        self.vy = v_y
+        self.vz = v_z
+        self.prev_x = self.x - self.vx * dt
+        self.prev_y = self.y - self.vy * dt
+        self.prev_z = self.z - self.vz * dt
+        self.prev_ax = 0
+        self.prev_ay = 0
+        self.prev_az = 0
         self.ax = 0
         self.ay = 0
         self.az = 0
