@@ -6,7 +6,7 @@ SIGMA = 1
 EPSILON = 1
 MASS = 1
 Number_of_particles = 50
-Concetration = 0.1
+Concetration = 0.2
 
 ACCELERATION = EPSILON / (MASS * SIGMA)
 VELOCITY = np.sqrt(EPSILON / MASS)
@@ -18,10 +18,10 @@ Particles_in_one_row = int(Number_of_particles ** (1 / 3)) + d
 Size_of_cell = (Number_of_particles / Concetration) ** (1 / 3) / (Particles_in_one_row + 1)
 Size_of_box = (Particles_in_one_row + 1) * Size_of_cell
 Rad_of_rand_gen = 0.2
-Number_of_steps = 100
+Number_of_steps = 100000
 Step_of_count = 500
 Velocity_dispersion = 0.5
-dt = 0.001
+dt = 0.0001
 
 Particles = []
 
@@ -199,10 +199,14 @@ def Update_positions(Particles):
         part.z %= Size_of_box
 
 def Get_velocity(Particles):
-    V = []
+    Vx = []
+    Vy = []
+    Vz = []
     for part in Particles:
-        V.append(np.sqrt(part.vx ** 2 + part.vy ** 2 + part.vz ** 2))
-    return V
+        Vx.append(part.vx)
+        Vy.append(part.vy)
+        Vz.append(part.vz)
+    return Vx, Vy, Vz
 
 def Get_momentum(Particles):
     P = [0, 0, 0]
@@ -241,14 +245,18 @@ def Modeling():
     output_P = open('Potential_energy.txt', 'w')
     output_M = open('Momentum.txt', 'w')
     output_VMD = open('Coordinates_VMD.txt', 'w')
-    V_mean = [0] * len(Particles)
+    V_mean_x = [0] * len(Particles)
+    V_mean_y = [0] * len(Particles)
+    V_mean_z = [0] * len(Particles)
     print('Modeling started...')
 
     for i in range(1, Number_of_steps + 1):
-        if i + 100 >= Number_of_steps:
-            V = Get_velocity(Particles)
-            for i in range(0, len(V_mean)):
-                V_mean[i] += V[i] / 100
+        if (Number_of_steps - i) * dt <= 1:
+            Vx, Vy, Vz = Get_velocity(Particles)
+            for j in range(0, len(V_mean_x)):
+                V_mean_x[j] += Vx[j] * dt
+                V_mean_y[j] += Vy[j] * dt
+                V_mean_z[j] += Vz[j] * dt
         print(Get_energy(Particles, True), file=output_E)
         print(K_energy(Particles), file=output_K)
         print(P_energy(Particles), file=output_P)
@@ -275,11 +283,10 @@ def Modeling():
     output_M.close()
 
     output_V = open('Velocity.txt', 'w')
-    for i in range(len(V_mean)):
-        print(V_mean[i], file=output_V)
+    for i in range(len(V_mean_x)):
+        print(str(V_mean_x[i]) + ',' + str(V_mean_y[i]) + ',' + str(V_mean_z[i]), file=output_V)
     output_V.close()
 
-    print(str(Number_of_steps) + ' of ' + str(Number_of_steps) + ' were modeled...')
     print('Modeling ended.')
 
 def Save_Modeling():
@@ -293,19 +300,40 @@ def Velocity():
     '''
             График распределения скоростей
     '''
-    input_V = open('velocity.txt', 'r')
+    input_V = open('Velocity.txt', 'r')
+    Vx = []
+    Vy = []
+    Vz = []
     V = []
     for i in range(Number_of_particles):
         s = input_V.readline()
         s = s.rstrip()
+        s = s.split(',')
         if (s == ''): break
-        V.append(float(s))
+        Vx.append(float(s[0]))
+        Vy.append(float(s[1]))
+        Vz.append(float(s[2]))
+        V.append(float(s[0]) ** 2 + float(s[1]) ** 2 + float(s[2]) ** 2)
     input_V.close()
-    if (len(V) != Number_of_particles):
+    if (len(Vx) != Number_of_particles):
         print('Wrong information, do modeling.')
+    rx = 2 * (np.percentile(Vx, 75) - np.percentile(Vx, 25)) / (Number_of_particles ** (1 / 3))
+    ry = 2 * (np.percentile(Vy, 75) - np.percentile(Vy, 25)) / (Number_of_particles ** (1 / 3))
+    rz = 2 * (np.percentile(Vz, 75) - np.percentile(Vz, 25)) / (Number_of_particles ** (1 / 3))
     r = 2 * (np.percentile(V, 75) - np.percentile(V, 25)) / (Number_of_particles ** (1 / 3))
-    r = (np.percentile(V, 75) - np.percentile(V, 25)) / (Number_of_particles ** (1 / 3))
-    plt.hist(V, bins=np.arange(0, max(V) + r, r))
+    #r = 0.5 * (np.percentile(V, 75) - np.percentile(V, 25)) / (Number_of_particles ** (1 / 3))
+    sp = plt.subplot(221)
+    plt.title(r'$v_x$')
+    plt.hist(Vx, bins=np.arange(min(Vx), max(Vx) + rx, rx))
+    sp = plt.subplot(222)
+    plt.title(r'$v_y$')
+    plt.hist(Vy, bins=np.arange(min(Vy), max(Vy) + ry, ry))
+    sp = plt.subplot(223)
+    plt.title(r'$v_z$')
+    plt.hist(Vz, bins=np.arange(min(Vz), max(Vz) + rz, rz))
+    sp = plt.subplot(224)
+    plt.title(r'$v$')
+    plt.hist(V, bins=np.arange(min(V), max(V) + r, r))
     plt.show()
 
 def Energy():
@@ -331,14 +359,14 @@ def Energy():
     input_E.close()
     input_EK.close()
     input_EP.close()
-    x1 = np.arange(0, len(E), 1)
-    x2 = np.arange(0, len(E_K), 1)
-    x3 = np.arange(0, len(E_P), 1)
+    x1 = np.arange(0, len(E) * dt, dt)
+    x2 = np.arange(0, len(E_K) * dt, dt)
+    x3 = np.arange(0, len(E_P) * dt, dt)
     plt.plot(x1, E, label='Full Energy')
     plt.plot(x2, E_K, label='Kinetic Energy')
     plt.plot(x3, E_P, label='Potential Energy')
     plt.legend(loc='best', fontsize=12)
-    plt.xlabel('Number of step', fontsize=14)
+    plt.xlabel('Time', fontsize=14)
     plt.ylabel('Energy', fontsize=14)
     plt.grid(True)
     plt.show()
