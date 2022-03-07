@@ -83,9 +83,9 @@ def Generate_particles():
         с рандомными  скоростями, ограниченные константой  V_MAX
         Возвращает массив с элементами класса particle
     '''
-    vx = np.random.normal(0, Velocity_dispersion, Number_of_particles)
-    vy = np.random.normal(0, Velocity_dispersion, Number_of_particles)
-    vz = np.random.normal(0, Velocity_dispersion, Number_of_particles)
+    vx = np.random.normal(loc=0, scale=Velocity_dispersion, size=Number_of_particles)
+    vy = np.random.normal(loc=0, scale=Velocity_dispersion, size=Number_of_particles)
+    vz = np.random.normal(loc=0, scale=Velocity_dispersion, size=Number_of_particles)
     output = open('initial_conditions.txt', 'w')
     Particles = []
     counter = 0
@@ -99,6 +99,7 @@ def Generate_particles():
                 (j + (rn.random() - 0.5) * 2 * Rad_of_rand_gen) * Size_of_cell, 
                 (k + (rn.random() - 0.5) * 2 * Rad_of_rand_gen) * Size_of_cell,
                 vx[counter], vy[counter], vz[counter]))
+                counter += 1
     for part in Particles:
         print(str(part.x) + ',' +  str(part.y) + ',' +  str(part.z) + ',' +  
         str(part.vx) + ',' +  str(part.vy) + ',' +  str(part.vz),  file=output)
@@ -389,8 +390,8 @@ def Momentum():
 
 if __name__ == "__main__":
     Create()
-    Modeling()
-    Save_Modeling()
-    Velocity()
-    Energy()
-    Momentum()
+    #Modeling()
+    #Save_Modeling()
+    #Velocity()
+    #Energy()
+    #Momentum()
